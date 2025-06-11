@@ -1,78 +1,208 @@
 "use client";
 
 import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "./ui/button";
+import { Plus, Trash2 } from "lucide-react";
+import { Badge } from "./ui/badge";
+import ThemeToggle from "./theme-toggle";
+import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
+
+interface ProjectFile {
+  id: string;
+  name: string;
+  content: string;
+  type: "file";
+  extension: string;
+}
+
+interface ProjectFolder {
+  id: string;
+  name: string;
+  type: "folder";
+  children: (ProjectFile | ProjectFolder)[];
+  isExpanded?: boolean;
+}
+
+type ProjectItem = ProjectFile | ProjectFolder;
 
 interface Step {
   id: string;
   name: string;
-  code: string;
+  files: (ProjectFile | ProjectFolder)[];
+  activeFileId: string | null;
   delay: number;
 }
 
 interface SidebarProps {
   steps: Step[];
+  selectedStepId: string | null;
   onAddStep: () => void;
   onDeleteStep: (id: string) => void;
-  isPlaying: boolean;
-  setIsPlaying: (playing: boolean) => void;
+  onSelectStep: (id: string) => void;
+  onUpdateStepDelay: (id: string, delay: number) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
   steps,
+  selectedStepId,
   onAddStep,
   onDeleteStep,
-  isPlaying,
-  setIsPlaying,
+  onSelectStep,
+  onUpdateStepDelay,
 }) => {
   return (
-    <div className="h-full flex flex-col p-4">
-      <h2 className="text-xl font-bold mb-4">Animation Steps</h2>
-
-      {/* Add Step Button */}
-      <button
-        onClick={onAddStep}
-        className="mb-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-        disabled={isPlaying}
+    <motion.div
+      className="h-full flex flex-col p-6 bg-gradient-to-b from-background to-background/50"
+      initial={{ x: -300, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
+    >
+      <motion.h2
+        className="text-lg font-bold mb-6 text-foreground flex items-center justify-between"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
       >
-        Add Step
-      </button>
-
-      {/* Steps List */}
-      <div className="flex-1 overflow-y-auto space-y-2">
-        {steps.map((step, index) => (
-          <div key={step.id} className="bg-gray-50 p-3 rounded border">
-            <div className="flex justify-between items-center mb-2">
-              <span className="font-medium">Step {index + 1}</span>
-              <button
-                onClick={() => onDeleteStep(step.id)}
-                className="text-red-500 hover:text-red-700 text-sm"
-                disabled={isPlaying}
+        <span>Sahneler</span>
+        <ThemeToggle />
+      </motion.h2>
+      <motion.div
+        onClick={onAddStep}
+        whileHover={{ scale: 1.02, y: -2 }}
+        whileTap={{ scale: 0.98 }}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+      >
+        <Button className="flex items-center justify-center space-x-2 w-full mb-10">
+          <Plus className="w-4 h-4" />
+          <span>Sahne Ekle</span>
+        </Button>
+      </motion.div>
+      <div className="flex-1 overflow-y-auto space-y-3">
+        <AnimatePresence>
+          {steps.map((step, index) => (
+            <motion.div
+              key={step.id}
+              initial={{ opacity: 0, y: 0, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 0.9 }}
+              exit={{ opacity: 0, y: 0, scale: 0.9 }}
+              transition={{
+                duration: 0.3,
+                delay: index * 0.1,
+                type: "spring",
+                stiffness: 100,
+                damping: 20,
+              }}
+              layout
+              whileHover={{ scale: 1 }}
+              onClick={() => onSelectStep(step.id)}
+            >
+              <Card
+                className={`transition-all duration-200 cursor-pointer ${
+                  selectedStepId === step.id
+                    ? "border-blue-300 shadow-lg"
+                    : "border-gray-200 shadow-sm hover:shadow-md"
+                }`}
               >
-                Delete
-              </button>
-            </div>
-            <div className="text-xs text-gray-600 bg-white p-2 rounded font-mono">
-              {step.code.substring(0, 50)}...
-            </div>
-          </div>
-        ))}
+                <CardHeader>
+                  <div className="flex justify-between items-center mb-3">
+                    <motion.span
+                      className="font-semibold text-foreground flex items-center space-x-2"
+                      whileHover={{ x: 5 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <Badge>{index + 1}</Badge>
+                      <span>Sahne {index + 1}</span>
+                    </motion.span>
+                    <motion.button
+                      onClick={() => onDeleteStep(step.id)}
+                      className="text-red-500 hover:text-red-700 text-sm px-2 py-1 rounded transition-colors duration-200"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </motion.button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <motion.div
+                    className="text-xs text-foreground bg-background p-3 rounded-lg font-mono border"
+                    transition={{ duration: 0.2 }}
+                  >
+                    {step.files.length > 0
+                      ? `${step.files.length} file${
+                          step.files.length > 1 ? "s" : ""
+                        } • ${
+                          step.files.find((f) => f.id === step.activeFileId)
+                            ?.name ||
+                          step.files[0]?.name ||
+                          "No active file"
+                        }`
+                      : "No files"}
+                  </motion.div>
+                </CardContent>
+                <CardFooter>
+                  <motion.div
+                    className="mt-3 flex items-center space-x-2"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <span className="text-xs text-foreground">⏱️ Delay:</span>
+                    <input
+                      type="number"
+                      value={step.delay}
+                      onChange={(e) =>
+                        onUpdateStepDelay(
+                          step.id,
+                          parseInt(e.target.value) || 1000
+                        )
+                      }
+                      min="100"
+                      max="10000"
+                      step="100"
+                      className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:border-blue-500 transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <span className="text-xs text-foreground">ms</span>
+                  </motion.div>
+                </CardFooter>
+              </Card>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+        {steps.length === 0 && (
+          <motion.div
+            className="flex flex-col items-center justify-center py-12 text-gray-400"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <motion.div
+              className="text-4xl mb-4"
+              animate={{
+                y: [0, -10, 0],
+                rotate: [0, 5, -5, 0],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            >
+              📝
+            </motion.div>
+            <p className="text-sm text-center">
+              No steps yet.
+              <br />
+              Start by adding your first step!
+            </p>
+          </motion.div>
+        )}
       </div>
-
-      {/* Preview Controls */}
-      <div className="mt-4 pt-4 border-t">
-        <button
-          onClick={() => setIsPlaying(!isPlaying)}
-          className={`w-full px-4 py-2 rounded transition-colors ${
-            isPlaying
-              ? "bg-red-500 hover:bg-red-600 text-white"
-              : "bg-green-500 hover:bg-green-600 text-white"
-          }`}
-          disabled={steps.length === 0}
-        >
-          {isPlaying ? "Stop Animation" : "Start Preview"}
-        </button>
-      </div>
-    </div>
+    </motion.div>
   );
 };
 
