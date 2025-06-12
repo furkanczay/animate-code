@@ -7,12 +7,13 @@ import CodeEditor from "@/components/code-editor";
 import { PlayCircle } from "lucide-react";
 import Preview from "@/components/code-preview";
 
-interface ProjectFile {
+export interface ProjectFile {
   id: string;
   name: string;
   content: string;
   type: "file";
   extension: string;
+  fullPath?: string;
 }
 
 interface Step {
@@ -228,7 +229,7 @@ const HomePage = () => {
               <div className="absolute bottom-6 right-6 flex gap-4">
                 <button
                   onClick={() => setShowPreview(true)}
-                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-6 py-3 rounded-xl shadow-lg font-medium transition-all duration-200 flex items-center space-x-2"
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl shadow-lg font-medium transition-all duration-200 flex items-center space-x-2"
                 >
                   <span>
                     <PlayCircle />

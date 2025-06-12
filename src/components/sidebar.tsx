@@ -3,10 +3,18 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import {
+  Github,
+  Instagram,
+  Linkedin,
+  Plus,
+  Trash2,
+  Youtube,
+} from "lucide-react";
 import { Badge } from "./ui/badge";
 import ThemeToggle from "./theme-toggle";
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
+import Link from "next/link";
 
 interface ProjectFile {
   id: string;
@@ -56,6 +64,9 @@ const Sidebar: React.FC<SidebarProps> = ({
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
     >
+      <h1 className="text-3xl font-bold text-center mb-6">
+        CodeFlow <Badge variant={"outline"}>BETA</Badge>
+      </h1>
       <motion.h2
         className="text-lg font-bold mb-6 text-foreground flex items-center justify-between"
         initial={{ y: -20, opacity: 0 }}
@@ -199,6 +210,33 @@ const Sidebar: React.FC<SidebarProps> = ({
             </p>
           </motion.div>
         )}
+      </div>
+      <div className="border mt-6 py-10">
+        <div className="flex justify-center space-x-4">
+          <Button asChild variant={"outline"}>
+            <Link href={"https://github.com/furkanczay"} target="_blank">
+              <Github />
+            </Link>
+          </Button>
+          <Button asChild variant={"outline"}>
+            <Link href={"https://linkedin.com/in/furkanczay"} target="_blank">
+              <Linkedin />
+            </Link>
+          </Button>
+          <Button asChild variant={"outline"}>
+            <Link href={"https://youtube.com/@furkanczay"} target="_blank">
+              <Youtube />
+            </Link>
+          </Button>
+          <Button asChild variant={"outline"}>
+            <Link href={"https://instagram.com/furkanczay"} target="_blank">
+              <Instagram />
+            </Link>
+          </Button>
+        </div>
+        <div className="flex justify-center mt-4 text-xs text-muted-foreground">
+          <span>Made by Furkan Özay</span>
+        </div>
       </div>
     </motion.div>
   );

@@ -11,15 +11,15 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useTheme } from "next-themes";
 import * as Diff from "diff";
+import { ProjectFile } from "@/app/page";
 
 interface Step {
   id: string;
   content: string;
   title: string;
   changedFiles?: string[];
-  files?: any[];
+  files?: ProjectFile[];
   delay?: number;
 }
 
@@ -103,15 +103,15 @@ export default function Preview({
     const currStep = steps[currentStep];
     const prevStep = currentStep > 0 ? steps[currentStep - 1] : null;
     const changedFiles = currStep.changedFiles || [];
-    let filePath =
+    const filePath =
       changedFiles[currentFileIndex] ||
       (currStep.files && currStep.files[0]?.fullPath);
     if (!filePath) {
       setDiffLines([]);
       return;
     }
-    const currFile = currStep.files?.find((f: any) => f.fullPath === filePath);
-    const prevFile = prevStep?.files?.find((f: any) => f.fullPath === filePath);
+    const currFile = currStep.files?.find((f) => f.fullPath === filePath);
+    const prevFile = prevStep?.files?.find((f) => f.fullPath === filePath);
     const currContent = currFile?.content || "";
     const prevContent = prevFile?.content || "";
     if (currentStep === 0) {
@@ -185,7 +185,7 @@ export default function Preview({
   const fileTabs =
     changedFiles.length > 0
       ? changedFiles
-      : currStep.files?.map((f: any) => f.fullPath);
+      : (currStep.files?.map((f) => f.fullPath).filter(Boolean) as string[]);
   const currentFilePath = fileTabs?.[currentFileIndex] || "";
   return (
     <div className="relative flex flex-col h-full min-h-screen bg-transparent">
