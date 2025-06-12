@@ -24,8 +24,6 @@ interface ProjectFolder {
   isExpanded?: boolean;
 }
 
-type ProjectItem = ProjectFile | ProjectFolder;
-
 interface Step {
   id: string;
   name: string;
@@ -103,7 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 className={`transition-all duration-200 cursor-pointer ${
                   selectedStepId === step.id
                     ? "border-blue-300 shadow-lg"
-                    : "border-gray-200 shadow-sm hover:shadow-md"
+                    : "shadow-sm hover:shadow-md"
                 }`}
               >
                 <CardHeader>

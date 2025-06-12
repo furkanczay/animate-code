@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
-import Editor from "@monaco-editor/react";
+import Editor, { useMonaco } from "@monaco-editor/react";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "next-themes";
 
@@ -24,6 +24,18 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   };
 
   const { resolvedTheme } = useTheme();
+  const monaco = useMonaco();
+  useEffect(() => {
+    if (monaco) {
+      monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+        jsx: monaco.languages.typescript.JsxEmit.React,
+        allowJs: true,
+        target: monaco.languages.typescript.ScriptTarget.ESNext,
+        moduleResolution:
+          monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+      });
+    }
+  }, [monaco]);
 
   const getLanguageForMonaco = (fileName: string, lang?: string) => {
     if (fileName && fileName.includes(".")) {

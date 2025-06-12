@@ -4,13 +4,6 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Sidebar from "@/components/sidebar";
 import CodeEditor from "@/components/code-editor";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { PlayCircle } from "lucide-react";
 import Preview from "@/components/code-preview";
 
@@ -33,16 +26,33 @@ interface Step {
 const HomePage = () => {
   const initialFile: ProjectFile = {
     id: "file1",
-    name: "index.js",
-    content: `function sayHello(){\n    \n}`,
+    name: "App.tsx",
+    content: `import React from "react";\n\n`,
     type: "file",
     extension: "tsx",
   };
   const initialSteps: Step[] = [
     {
       id: "1",
-      name: "Step 1 - Empty Function",
-      files: [initialFile],
+      name: "Sahne 1",
+      files: [
+        {
+          ...initialFile,
+          content: `import React from "react";\n\ninterface CounterProps {}\n\nfunction Counter(props: CounterProps) {\n  return <div>Counter</div>;\n}\n\nexport default Counter;`,
+        },
+      ],
+      activeFileId: "file1",
+      delay: 1500,
+    },
+    {
+      id: "2",
+      name: "Sahne 2",
+      files: [
+        {
+          ...initialFile,
+          content: `import React, { useState } from "react";\n\ninterface CounterProps {}\n\nfunction Counter(props: CounterProps) {\n  const [count, setCount] = useState<number>(0);\n  return <div>Counter: {count}</div>;\n}\n\nexport default Counter;`,
+        },
+      ],
       activeFileId: "file1",
       delay: 1500,
     },
@@ -50,9 +60,9 @@ const HomePage = () => {
   const [steps, setSteps] = useState<Step[]>(initialSteps);
   const [selectedStepId, setSelectedStepId] = useState<string | null>("1");
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [currentPreviewStep, setCurrentPreviewStep] = useState(0);
   const [previewDelay] = useState(1000);
+  const [showPreview, setShowPreview] = useState(false);
 
   function getChangedFiles(prev: ProjectFile[], next: ProjectFile[]): string[] {
     if (!prev[0] || !next[0]) return [];
@@ -164,21 +174,23 @@ const HomePage = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
     >
-      <motion.div
-        className="w-80 bg-background border-r border-gray-200 shadow-lg min-h-0"
-        initial={{ x: -100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-      >
-        <Sidebar
-          steps={steps}
-          selectedStepId={selectedStepId}
-          onAddStep={addStep}
-          onDeleteStep={deleteStep}
-          onSelectStep={setSelectedStepId}
-          onUpdateStepDelay={updateStepDelay}
-        />
-      </motion.div>
+      {!showPreview && (
+        <motion.div
+          className="w-80 bg-background border-r border-muted shadow-lg min-h-0"
+          initial={{ x: -100, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          <Sidebar
+            steps={steps}
+            selectedStepId={selectedStepId}
+            onAddStep={addStep}
+            onDeleteStep={deleteStep}
+            onSelectStep={setSelectedStepId}
+            onUpdateStepDelay={updateStepDelay}
+          />
+        </motion.div>
+      )}
       <motion.div
         className="flex-1 flex flex-col min-h-0"
         initial={{ opacity: 0, scale: 0.95 }}
@@ -191,71 +203,64 @@ const HomePage = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <div className="p-4 flex items-center gap-2">
-            <input
-              type="text"
-              value={currentFile?.name || ""}
-              onChange={(e) =>
-                currentFile && updateFileName(currentFile.id, e.target.value)
-              }
-              className="px-3 py-1 rounded bg-muted text-muted-foreground border text-xs font-mono w-72"
-              placeholder="/components/button.tsx"
-            />
-          </div>
-          <CodeEditor
-            code={currentCode}
-            onChange={(content) =>
-              currentFile && updateFileContent(currentFile.id, content)
-            }
-            fileName={currentFile?.name || ""}
-            language={currentFile?.extension || "tsx"}
-          />
-          <motion.div
-            className="absolute bottom-6 right-6"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
-          >
-            <Dialog
-              open={isPreviewModalOpen}
-              onOpenChange={setIsPreviewModalOpen}
-            >
-              <DialogTrigger asChild>
-                <motion.button
-                  onClick={() => setIsPreviewModalOpen(true)}
+          {!showPreview ? (
+            <>
+              <div className="p-4 flex items-center gap-2">
+                <input
+                  type="text"
+                  value={currentFile?.name || ""}
+                  onChange={(e) =>
+                    currentFile &&
+                    updateFileName(currentFile.id, e.target.value)
+                  }
+                  className="px-3 py-1 rounded bg-muted text-muted-foreground border text-xs font-mono w-72"
+                  placeholder="/components/button.tsx"
+                />
+              </div>
+              <CodeEditor
+                code={currentCode}
+                onChange={(content) =>
+                  currentFile && updateFileContent(currentFile.id, content)
+                }
+                fileName={currentFile?.name || ""}
+                language={currentFile?.extension || "tsx"}
+              />
+              <div className="absolute bottom-6 right-6 flex gap-4">
+                <button
+                  onClick={() => setShowPreview(true)}
                   className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-6 py-3 rounded-xl shadow-lg font-medium transition-all duration-200 flex items-center space-x-2"
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
                 >
                   <span>
                     <PlayCircle />
                   </span>
                   <span>Önizle</span>
-                </motion.button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-6xl h-[80vh] p-0 flex flex-col">
-                <DialogHeader className="p-6 pb-4 flex-shrink-0">
-                  <DialogTitle className="text-xl font-bold">
-                    Code Animation Preview
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="flex-1 min-h-0 p-6 pt-0">
-                  <Preview
-                    steps={convertToPreviewSteps(steps)}
-                    currentStep={currentPreviewStep}
-                    isPlaying={isPlaying}
-                    delay={previewDelay}
-                    onStepChange={setCurrentPreviewStep}
-                    onPlayPause={() => setIsPlaying(!isPlaying)}
-                    onRestart={() => {
-                      setCurrentPreviewStep(0);
-                      setIsPlaying(false);
-                    }}
-                  />
-                </div>
-              </DialogContent>
-            </Dialog>
-          </motion.div>
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <Preview
+                steps={convertToPreviewSteps(steps)}
+                currentStep={currentPreviewStep}
+                isPlaying={isPlaying}
+                delay={previewDelay}
+                onStepChange={setCurrentPreviewStep}
+                onPlayPause={() => setIsPlaying(!isPlaying)}
+                onRestart={() => {
+                  setCurrentPreviewStep(0);
+                  setIsPlaying(false);
+                }}
+              />
+              <div className="absolute bottom-6 right-6 flex gap-4 z-40">
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="bg-background border border-border text-foreground px-6 py-3 rounded-xl shadow-lg font-medium transition-all duration-200 flex items-center space-x-2"
+                >
+                  <span>Önizlemeden Çık</span>
+                </button>
+              </div>
+            </>
+          )}
         </motion.div>
       </motion.div>
     </motion.div>
