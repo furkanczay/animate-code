@@ -22,7 +22,6 @@ npm run dev
 
 ```bash
 npm run build
-npm run export
 ```
 
 Çıktı `out/` klasörüne yazılır.
